@@ -15,11 +15,10 @@ namespace NET_TCP_Device
     public partial class Form1 : Form
     {
         //*****************************************************  CONSTANTS  *******************************************************
-        private const int appPort = 8060;           //  TCP Port
-        private const int remotePort = 9010;        //  UDP порт для отправки данных
-        //private const int localPort = 9010;         //  UDP локальный порт для прослушивания входящих подключений
-        private const string addr = "235.5.5.254";  //  UDP IP address
-        private const string appName = "#Q#U#I#Z";  // Код приложения для UDP
+        // TcpConstants.APP_PORT;               // TCP Port
+        // TcpConstants.UDP_SEARCH_PORT;        // UDP порт для отправки данных
+        // TcpConstants.UDP_SEARCH_IP;          // UDP IP address
+        // TcpConstants.APP_NAME_COMMAND;       // Код приложения для UDP
 
         //*************************************************************************************************************************
         //*                                                     MAIN FORM                                                         *
@@ -40,14 +39,14 @@ namespace NET_TCP_Device
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            tcp_divice = new TCP_NET_Server_Device();
-            tcp_divice.Connect(TCP_NET_Server_Device.GetConnectionIP(appPort));
+            tcp_divice = new TCP_NET_Server_Device(ConnectionConstants.APP_PORT);
+            tcp_divice.Connect();
             while (!tcp_divice.IsConnected) { };
             tcp_divice.onRecieveMessage += tcp_divice_onRecieveMessage;
-            this.Text = "QUIZ   Server address: " + TCP_NET_Server_Device.GetConnectionIP(appPort);
+            this.Text = "QUIZ   Server address: " + TCP_NET_Server_Device.GetConnectionIP(ConnectionConstants.APP_PORT);
 
             udp_device = new UDP_NET_Device();
-            udp_device.Connect(addr, remotePort, appName);
+            udp_device.Connect(ConnectionConstants.UDP_SEARCH_IP, ConnectionConstants.UDP_SEARCH_PORT, ConnectionConstants.APP_ID);
 
         }
 
@@ -109,11 +108,12 @@ namespace NET_TCP_Device
         //*                                                    CONNECTION                                                          *
         //**************************************************************************************************************************
         private delegate void TextRefredhDelegate(OnReciveMessageEventArgs e);
-        TCP_NET_Server_Device tcp_divice;
+        NET_TCP_Device.TCP_NET_Server_Device tcp_divice;
         UDP_NET_Device udp_device;
 
         void tcp_divice_onRecieveMessage(object sender, OnReciveMessageEventArgs e)
         {
+            //Console.WriteLine("Command: " + e.command);
             switch (e.command)
             {
                 case OnReciveMessageEventArgs.CONNECTED:
@@ -130,12 +130,12 @@ namespace NET_TCP_Device
 
         private void ConnectedMessage(OnReciveMessageEventArgs e)
         {
-            this.Text = "QUIZ   Server address: " + TCP_NET_Server_Device.GetConnectionIP(appPort) + " - connected";
+            this.Text = "QUIZ   Server address: " + TCP_NET_Server_Device.GetConnectionIP(ConnectionConstants.APP_PORT) + " - connected";
         }
 
         private void DisconnectedMessage(OnReciveMessageEventArgs e)
         {
-            this.Text = "QUIZ   Server address: " + TCP_NET_Server_Device.GetConnectionIP(appPort) + " - disconnected";
+            this.Text = "QUIZ   Server address: " + TCP_NET_Server_Device.GetConnectionIP(ConnectionConstants.APP_PORT) + " - disconnected";
         }
 
         //**************************************************************************************************************************
@@ -170,30 +170,36 @@ namespace NET_TCP_Device
 
         private void ProcessMessage(OnReciveMessageEventArgs e)
         {
-            string message = e.text;
-            if (message.Contains("#r#e#f"))
+            
+            string text = e.text;
+            string[] commands = text.Split('/');
+
+            foreach (string message in commands) 
             {
-                RefreshTeamScore(GetFirstStringArgFromIndex(e.text), GetIntArgFromIndex(e.text));
-            }
-            else if(message.Contains("#r#e#n"))
-            {
-                RenameTeam(GetFirstStringArgFromIndex(e.text), GetSecondStringArgFromIndex(e.text));
-            }
-            else if (message.Contains("#a#d#d"))
-            {
-                AddNewTeam(GetFirstStringArgFromIndex(e.text), GetIntArgFromIndex(e.text));
-            }
-            else if (message.Contains("#d#e#l"))
-            {
-                DeleteTeam(GetFirstStringArgFromIndex(e.text));
-            }
-            else if (message.Contains("#t#a#b"))
-            {
-                NewTab();
-            }
-            else if (message.Contains("#f#s#m"))
-            {
-                fullScreenToolStripMenuItem.Checked = !fullScreenToolStripMenuItem.Checked;
+                if (message.Contains(AppConstants.REFRESH_TEAM_RECORD))
+                {
+                    RefreshTeamScore(GetFirstStringArgFromIndex(message), GetIntArgFromIndex(message));
+                }
+                else if (message.Contains(AppConstants.RENAME_TEAM))
+                {
+                    RenameTeam(GetFirstStringArgFromIndex(message), GetSecondStringArgFromIndex(message));
+                }
+                else if (message.Contains(AppConstants.ADD_NEW_TEAM))
+                {
+                    AddNewTeam(GetFirstStringArgFromIndex(message), GetIntArgFromIndex(message));
+                }
+                else if (message.Contains(AppConstants.DELETE_TEAM))
+                {
+                    DeleteTeam(GetFirstStringArgFromIndex(message));
+                }
+                else if (message.Contains(AppConstants.NEW_TABLE))
+                {
+                    NewTab();
+                }
+                else if (message.Contains(AppConstants.FULLSCREEN_MODE))
+                {
+                    fullScreenToolStripMenuItem.Checked = !fullScreenToolStripMenuItem.Checked;
+                }
             }
         }
 

@@ -122,7 +122,7 @@ namespace NET_TCP_Device.Eneter
             string id = e.ResponseReceiverId;
             ServerClient foundClient = clientList.FindClientByID(id);
 
-            Console.WriteLine("Received");
+            //Console.WriteLine("Received");
 
             if (foundClient != null)
             {
@@ -221,4 +221,6 @@ namespace NET_TCP_Device.Eneter
             return res;
         }
     }
+
+
 }

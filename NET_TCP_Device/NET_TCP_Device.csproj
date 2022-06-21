@@ -81,6 +81,7 @@
     <Compile Include="ResultTableViewClass.Designer.cs">
       <DependentUpon>ResultTableViewClass.cs</DependentUpon>
     </Compile>
+    <Compile Include="TCP_Constants.cs" />
     <Compile Include="TCP_NET_Device.cs" />
     <Compile Include="TCP_NET_Eneter_Device.cs" />
     <Compile Include="UDP_NET_Device.cs" />
